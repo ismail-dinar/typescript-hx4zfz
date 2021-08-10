@@ -1,4 +1,5 @@
-export const updatedRoutes = [
+
+const x = [
   {
     type: 'FeatureCollection',
     features: [
@@ -820,3 +821,6 @@ export const updatedRoutes = [
     ]
   }
 ];
+
+export const updatedRoutes = x[1];
+

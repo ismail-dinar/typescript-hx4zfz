@@ -6,13 +6,14 @@ import { findIndex, slice, concat } from 'lodash';
 var L = require('leaflet');
 L.GeometryUtil = require('leaflet-geometryutil');
 
+
 import './MovingMarker.js';
 
 var map = L.map('map').setView([48.855688, 2.348158], 11);
 var markersLayer = new L.LayerGroup();
 let layers: any[];
 let cars: any[];
-const timeouts = [5000, ]
+const timeouts = [13000];
 let started = false;
 
 const colors = [
@@ -33,7 +34,7 @@ const start = () => {
   layers = [];
   cars = [];
 
-  [routes[1]].forEach((route, index) => {
+  routes.forEach((route, index) => {
     const layer = L.geoJSON(route, {
       style: { color: colors[index], weight: 5 },
       pointToLayer: function(feature, latlng) {
@@ -48,7 +49,7 @@ const start = () => {
         route.features[route.features.length - 1].geometry.coordinates
       )
     );
-    updateRoute(coordinates, index, layer, route, 5000);
+    updateRoute(coordinates, index, layer, route, timeouts[index]);
     cars.push(
       L.Marker.movingMarker(
         coordinates.map(coordinate => coordinate.reverse()),
@@ -59,8 +60,8 @@ const start = () => {
     markersLayer.addLayer(layer);
 
     layers.push(layer);
-    //markersLayer.addLayer(L.geoJSON(updatedRoutes[1]))
   });
+
   map.addLayer(markersLayer);
 };
 
@@ -151,7 +152,6 @@ const updateRoute = (coordinates, i,layer, route, timeout) => {
       remainingPts,
       updatedRoute
     ) as any;
-
     markersLayer.addLayer(
       L.geoJSON(x, {
         style: { color: colors[i], weight: 5 },
