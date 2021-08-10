@@ -6,7 +6,6 @@ import { findIndex, slice, concat } from 'lodash';
 var L = require('leaflet');
 L.GeometryUtil = require('leaflet-geometryutil');
 
-
 import './MovingMarker.js';
 
 var map = L.map('map').setView([48.855688, 2.348158], 11);
@@ -14,7 +13,7 @@ var markersLayer = new L.LayerGroup();
 let layers: any[];
 let cars: any[];
 
-const timeouts = [13000, 10000 ,6000, 13000,5000, 12000];
+const timeouts = [13000, 10000, 6000, 13000, 5000, 12000];
 let started = false;
 
 const colors = [
@@ -116,8 +115,7 @@ restartBtn.addEventListener('click', () => {
   map.removeLayer(markersLayer);
 });
 
-
-const updateRoute = (coordinates, i,layer, route, timeout) => {
+const updateRoute = (coordinates, i, layer, route, timeout) => {
   setTimeout(() => {
     const closest = L.GeometryUtil.closest(
       map,
@@ -168,8 +166,9 @@ const updateRoute = (coordinates, i,layer, route, timeout) => {
       (concat(remainingPts, updatedRoute) as any).map(coordinate =>
         coordinate.reverse()
       ),
-      15000, {autostart: true}
+      15000,
+      { autostart: true }
     );
-    markersLayer.addLayer(cars[i])
-  }, timeout)
-}
+    markersLayer.addLayer(cars[i]);
+  }, timeout);
+};
