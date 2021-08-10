@@ -13,7 +13,8 @@ var map = L.map('map').setView([48.855688, 2.348158], 11);
 var markersLayer = new L.LayerGroup();
 let layers: any[];
 let cars: any[];
-const timeouts = [13000];
+
+const timeouts = [13000, 10000 ,6000, 13000,5000, 12000];
 let started = false;
 
 const colors = [
@@ -61,7 +62,6 @@ const start = () => {
 
     layers.push(layer);
   });
-
   map.addLayer(markersLayer);
 };
 
@@ -122,7 +122,7 @@ const updateRoute = (coordinates, i,layer, route, timeout) => {
     const closest = L.GeometryUtil.closest(
       map,
       coordinates,
-      cars[0].getLatLng(),
+      cars[i].getLatLng(),
       true
     );
     const index = findIndex(

@@ -1,4 +1,4 @@
-const x = [
+export const routes: any[] = [
   {
     type: 'FeatureCollection',
     features: [
@@ -915,4 +915,3 @@ const x = [
     ]
   }
 ];
-export const routes: any[] = x[1] as any;
