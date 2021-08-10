@@ -2,7 +2,7 @@
 import './style.css';
 import { routes } from './routes';
 import { updatedRoutes } from './updated-routes';
-import {findIndex, slice} from 'lodash';
+import { findIndex, slice, concat } from 'lodash';
 var L = require('leaflet');
 L.GeometryUtil = require('leaflet-geometryutil');
 
@@ -12,7 +12,7 @@ var map = L.map('map').setView([48.855688, 2.348158], 11);
 var markersLayer = new L.LayerGroup();
 let layers: any[];
 let cars: any[];
-
+const timeouts = [5000, ]
 let started = false;
 
 const colors = [
@@ -33,7 +33,7 @@ const start = () => {
   layers = [];
   cars = [];
 
-  [routes[0]].forEach((route, index) => {
+  [routes[1]].forEach((route, index) => {
     const layer = L.geoJSON(route, {
       style: { color: colors[index], weight: 5 },
       pointToLayer: function(feature, latlng) {
@@ -48,12 +48,7 @@ const start = () => {
         route.features[route.features.length - 1].geometry.coordinates
       )
     );
-    setTimeout(() => {
-      const closest = L.GeometryUtil.closest(map, coordinates, cars[0].getLatLng(), true);
-      const index = findIndex(coordinates,coord => coord[0] === closest.lat &&   coord[1] === closest.lng);
-      const updatedCoords = slice(coordinates, index)
-      
-    }, 1000)
+    updateRoute(coordinates, index, layer, route, 5000);
     cars.push(
       L.Marker.movingMarker(
         coordinates.map(coordinate => coordinate.reverse()),
@@ -62,20 +57,10 @@ const start = () => {
     );
     markersLayer.addLayer(cars[index]);
     markersLayer.addLayer(layer);
-    markersLayer.addLayer(
-      L.geoJSON(updatedRoutes[0], {
-        style: { color: colors[4] },
-        pointToLayer: function(feature, latlng) {
-          return L.circleMarker(latlng, {
-            radius: 8,
-            fillColor: colors[4]
-          });
-        }
-      })
-    );
-    layers.push(layer);
-  });
 
+    layers.push(layer);
+    //markersLayer.addLayer(L.geoJSON(updatedRoutes[1]))
+  });
   map.addLayer(markersLayer);
 };
 
@@ -129,3 +114,62 @@ restartBtn.addEventListener('click', () => {
   markersLayer.clearLayers();
   map.removeLayer(markersLayer);
 });
+
+
+const updateRoute = (coordinates, i,layer, route, timeout) => {
+  setTimeout(() => {
+    const closest = L.GeometryUtil.closest(
+      map,
+      coordinates,
+      cars[0].getLatLng(),
+      true
+    );
+    const index = findIndex(
+      coordinates,
+      coord => coord[0] === closest.lat && coord[1] === closest.lng
+    );
+
+    const startingPoint = JSON.parse(
+      JSON.stringify(updatedRoutes[i].features[0].geometry.coordinates)
+    ).reverse();
+    const startingPointIndex = findIndex(
+      coordinates,
+      coord => coord[0] === startingPoint[0] && coord[1] === startingPoint[1]
+    );
+
+    const remainingPts = slice(coordinates, index, startingPointIndex).map(
+      (coord: any) => coord.reverse()
+    );
+    const updatedRoute =
+      updatedRoutes[i].features[updatedRoutes[i].features.length - 1].geometry
+        .coordinates;
+
+    markersLayer.removeLayer(layer);
+    const x = updatedRoutes[i];
+
+    x.features[x.features.length - 1].geometry.coordinates = concat(
+      remainingPts,
+      updatedRoute
+    ) as any;
+
+    markersLayer.addLayer(
+      L.geoJSON(x, {
+        style: { color: colors[i], weight: 5 },
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 8,
+            fillColor: colors[i]
+          });
+        }
+      })
+    );
+    markersLayer.removeLayer(cars[i]);
+    cars[i] = L.Marker.movingMarker(
+      (concat(remainingPts, updatedRoute) as any).map(coordinate =>
+        coordinate.reverse()
+      ),
+      15000, {autostart: true}
+    );
+    markersLayer.addLayer(cars[i])
+  }, timeout)
+}
