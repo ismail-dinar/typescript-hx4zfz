@@ -110,6 +110,8 @@ playPauseBtn.addEventListener('click', () => {
   icon.classList.remove('bi-pause-circle-fill');
   icon.classList.add('bi-play-circle-fill');
   cars.forEach(car => car.pause());
+  timeoutfns.forEach(timeout => clearTimeout(timeout));
+  timeoutfns = [];
 });
 
 const restartBtn = document.querySelector('#refresh');
