@@ -5,7 +5,7 @@ import { updatedRoutes } from './updated-routes';
 import { findIndex, slice, concat } from 'lodash';
 var L = require('leaflet');
 L.GeometryUtil = require('leaflet-geometryutil');
-
+L.Icon.Default.imagePath = './icons';
 import './MovingMarker.js';
 
 var map = L.map('map').setView([48.855688, 2.348158], 11);
@@ -62,8 +62,7 @@ const start = () => {
       coordinates.map(coordinate => coordinate.reverse()),
       20000
     );
-    console.log(L.icon({ iconUrl: iconsUrls[index], iconSize: [38, 95], }));
-    marker.setIcon(L.icon({ iconUrl: iconsUrls[index], }));
+    marker.setIcon(L.icon({ iconUrl: 'car1.png', iconSize: [38, 95] }));
     cars.push(marker);
     markersLayer.addLayer(cars[index]);
     markersLayer.addLayer(layer);
