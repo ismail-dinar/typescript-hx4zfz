@@ -12,8 +12,16 @@ var map = L.map('map').setView([48.855688, 2.348158], 11);
 var markersLayer = new L.LayerGroup();
 let layers: any[];
 let cars: any[];
-
+const iconsUrls = [
+  'https://imgur.com/MtViY9O',
+  'https://imgur.com/CTfW9zC',
+  'https://imgur.com/3OnzsnF',
+  'https://imgur.com/pf8UzUk',
+  'https://imgur.com/z8sNiCG',
+  'https://imgur.com/pBp9yt7'
+];
 const timeouts = [13000, 10000, 6000, 13000, 5000, 12000];
+let timeoutfns = [];
 let started = false;
 
 const colors = [
@@ -50,12 +58,13 @@ const start = () => {
       )
     );
     updateRoute(coordinates, index, layer, route, timeouts[index]);
-    cars.push(
-      L.Marker.movingMarker(
-        coordinates.map(coordinate => coordinate.reverse()),
-        20000
-      )
+    const marker = L.Marker.movingMarker(
+      coordinates.map(coordinate => coordinate.reverse()),
+      20000
     );
+    console.log(L.icon({ iconUrl: iconsUrls[index], iconSize: [38, 95], }));
+    marker.setIcon(L.icon({ iconUrl: iconsUrls[index], }));
+    cars.push(marker);
     markersLayer.addLayer(cars[index]);
     markersLayer.addLayer(layer);
 
@@ -68,11 +77,14 @@ document.querySelectorAll('.form-check-input').forEach((input, index) => {
   input.addEventListener('change', event => {
     event.stopPropagation();
     if ((event.target as HTMLInputElement).checked) {
-      map.addLayer(layers[index]);
+      markersLayer.addLayer(layers[index]);
+      markersLayer.addLayer(cars[index]);
+      cars[index].start();
       return;
     }
 
-    map.removeLayer(layers[index]);
+    markersLayer.removeLayer(layers[index]);
+    markersLayer.removeLayer(cars[index]);
   });
 });
 
@@ -111,64 +123,68 @@ restartBtn.addEventListener('click', () => {
     icon.classList.remove('bi-pause-circle-fill');
     icon.classList.add('bi-play-circle-fill');
   }
+  timeoutfns.forEach(timeout => clearTimeout(timeout));
+  timeoutfns = [];
   markersLayer.clearLayers();
   map.removeLayer(markersLayer);
 });
 
 const updateRoute = (coordinates, i, layer, route, timeout) => {
-  setTimeout(() => {
-    const closest = L.GeometryUtil.closest(
-      map,
-      coordinates,
-      cars[i].getLatLng(),
-      true
-    );
-    const index = findIndex(
-      coordinates,
-      coord => coord[0] === closest.lat && coord[1] === closest.lng
-    );
+  timeoutfns.push(
+    setTimeout(() => {
+      const closest = L.GeometryUtil.closest(
+        map,
+        coordinates,
+        cars[i].getLatLng(),
+        true
+      );
+      const index = findIndex(
+        coordinates,
+        coord => coord[0] === closest.lat && coord[1] === closest.lng
+      );
 
-    const startingPoint = JSON.parse(
-      JSON.stringify(updatedRoutes[i].features[0].geometry.coordinates)
-    ).reverse();
-    const startingPointIndex = findIndex(
-      coordinates,
-      coord => coord[0] === startingPoint[0] && coord[1] === startingPoint[1]
-    );
+      const startingPoint = JSON.parse(
+        JSON.stringify(updatedRoutes[i].features[0].geometry.coordinates)
+      ).reverse();
+      const startingPointIndex = findIndex(
+        coordinates,
+        coord => coord[0] === startingPoint[0] && coord[1] === startingPoint[1]
+      );
 
-    const remainingPts = slice(coordinates, index, startingPointIndex).map(
-      (coord: any) => coord.reverse()
-    );
-    const updatedRoute =
-      updatedRoutes[i].features[updatedRoutes[i].features.length - 1].geometry
-        .coordinates;
+      const remainingPts = slice(coordinates, index, startingPointIndex).map(
+        (coord: any) => JSON.parse(JSON.stringify(coord)).reverse()
+      );
+      const updatedRoute =
+        updatedRoutes[i].features[updatedRoutes[i].features.length - 1].geometry
+          .coordinates;
 
-    markersLayer.removeLayer(layer);
-    const x = updatedRoutes[i];
+      markersLayer.removeLayer(layer);
+      const x = updatedRoutes[i];
 
-    x.features[x.features.length - 1].geometry.coordinates = concat(
-      remainingPts,
-      updatedRoute
-    ) as any;
-    markersLayer.addLayer(
-      L.geoJSON(x, {
-        style: { color: colors[i], weight: 5 },
-        pointToLayer: function(feature, latlng) {
-          return L.circleMarker(latlng, {
-            radius: 8,
-            fillColor: colors[i]
-          });
-        }
-      })
-    );
-    markersLayer.removeLayer(cars[i]);
-    cars[i] = L.Marker.movingMarker(
-      (concat(remainingPts, updatedRoute) as any).map(coordinate =>
-        coordinate.reverse()
-      ),
-      15000,
-      { autostart: true }
-    );
-    markersLayer.addLayer(cars[i]);
-  }, timeout);
+      x.features[x.features.length - 1].geometry.coordinates = concat(
+        remainingPts,
+        updatedRoute
+      ) as any;
+      markersLayer.addLayer(
+        L.geoJSON(x, {
+          style: { color: colors[i], weight: 5 },
+          pointToLayer: function(feature, latlng) {
+            return L.circleMarker(latlng, {
+              radius: 8,
+              fillColor: colors[i]
+            });
+          }
+        })
+      );
+      markersLayer.removeLayer(cars[i]);
+      cars[i] = L.Marker.movingMarker(
+        (concat(remainingPts, updatedRoute) as any).map(coordinate =>
+          JSON.parse(JSON.stringify(coordinate)).reverse()
+        ),
+        15000,
+        { autostart: true }
+      );
+      markersLayer.addLayer(cars[i]);
+    }, timeout)
+  );
 };
