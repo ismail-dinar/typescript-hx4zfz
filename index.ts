@@ -5,20 +5,19 @@ import { updatedRoutes } from './updated-routes';
 import { findIndex, slice, concat } from 'lodash';
 var L = require('leaflet');
 L.GeometryUtil = require('leaflet-geometryutil');
-L.Icon.Default.imagePath = './icons';
-import './MovingMarker.js';
 
+import './MovingMarker.js';
 var map = L.map('map').setView([48.855688, 2.348158], 11);
 var markersLayer = new L.LayerGroup();
 let layers: any[];
 let cars: any[];
 const iconsUrls = [
-  'https://imgur.com/MtViY9O',
-  'https://imgur.com/CTfW9zC',
-  'https://imgur.com/3OnzsnF',
-  'https://imgur.com/pf8UzUk',
-  'https://imgur.com/z8sNiCG',
-  'https://imgur.com/pBp9yt7'
+  'https://imgur.com/MtViY9O.png',
+  'https://imgur.com/CTfW9zC.png',
+  'https://imgur.com/3OnzsnF.png',
+  'https://imgur.com/pf8UzUk.png',
+  'https://imgur.com/z8sNiCG.png',
+  'https://imgur.com/pBp9yt7.png'
 ];
 const timeouts = [13000, 10000, 6000, 13000, 5000, 12000];
 let timeoutfns = [];
@@ -62,7 +61,7 @@ const start = () => {
       coordinates.map(coordinate => coordinate.reverse()),
       20000
     );
-    marker.setIcon(L.icon({ iconUrl: 'car1.png', iconSize: [38, 95] }));
+    marker.setIcon(L.icon({ iconUrl: iconsUrls[index], iconSize: [50, 50] }));
     cars.push(marker);
     markersLayer.addLayer(cars[index]);
     markersLayer.addLayer(layer);
@@ -183,6 +182,7 @@ const updateRoute = (coordinates, i, layer, route, timeout) => {
         15000,
         { autostart: true }
       );
+      cars[i].setIcon(L.icon({ iconUrl: iconsUrls[i], iconSize: [50, 50] }));
       markersLayer.addLayer(cars[i]);
     }, timeout)
   );
