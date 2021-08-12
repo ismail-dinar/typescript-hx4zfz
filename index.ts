@@ -23,6 +23,28 @@ const timeouts = [13000, 10000, 6000, 13000, 5000, 12000];
 let timeoutfns = [];
 let started = false;
 
+const Timer = function(callback, delay) {
+  var timerId, start, remaining = delay;
+
+  this.pause = () => {
+      this.paused = true;
+      remaining -= Date.now() - start;
+      this.remaining = remaining;
+      window.clearTimeout(timerId);
+    
+  };
+
+  this.resume = ()  => {
+    console.log(remaining)
+      this.paused = false;
+      start = Date.now();
+      window.clearTimeout(timerId);
+      timerId = window.setTimeout(callback, remaining);
+  };
+
+  this.resume();
+};
+
 const colors = [
   '#E74C3C',
   '#3498DB',
@@ -95,6 +117,11 @@ playPauseBtn.addEventListener('click', () => {
       started = true;
       start();
     }
+    timeoutfns.forEach(timeout => {
+      if(timeout.remaining > 0) {
+        timeout.resume()
+      }
+    });
     icon.classList.remove('bi-play-circle-fill');
     icon.classList.add('bi-pause-circle-fill');
     cars.forEach(car => {
@@ -110,8 +137,7 @@ playPauseBtn.addEventListener('click', () => {
   icon.classList.remove('bi-pause-circle-fill');
   icon.classList.add('bi-play-circle-fill');
   cars.forEach(car => car.pause());
-  timeoutfns.forEach(timeout => clearTimeout(timeout));
-  timeoutfns = [];
+  timeoutfns.forEach(timeout => timeout.pause());
 });
 
 const restartBtn = document.querySelector('#refresh');
@@ -131,7 +157,7 @@ restartBtn.addEventListener('click', () => {
 
 const updateRoute = (coordinates, i, layer, route, timeout) => {
   timeoutfns.push(
-    setTimeout(() => {
+    new Timer(() => {
       const closest = L.GeometryUtil.closest(
         map,
         coordinates,
