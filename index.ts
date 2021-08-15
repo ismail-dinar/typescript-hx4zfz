@@ -24,22 +24,23 @@ let timeoutfns = [];
 let started = false;
 
 const Timer = function(callback, delay) {
-  var timerId, start, remaining = delay;
+  var timerId,
+    start,
+    remaining = delay;
 
   this.pause = () => {
-      this.paused = true;
-      remaining -= Date.now() - start;
-      this.remaining = remaining;
-      window.clearTimeout(timerId);
-    
+    this.paused = true;
+    remaining -= Date.now() - start;
+    this.remaining = remaining;
+    window.clearTimeout(timerId);
   };
 
-  this.resume = ()  => {
-    console.log(remaining)
-      this.paused = false;
-      start = Date.now();
-      window.clearTimeout(timerId);
-      timerId = window.setTimeout(callback, remaining);
+  this.resume = () => {
+    console.log(remaining);
+    this.paused = false;
+    start = Date.now();
+    window.clearTimeout(timerId);
+    timerId = window.setTimeout(callback, remaining);
   };
 
   this.resume();
@@ -100,9 +101,12 @@ document.querySelectorAll('.form-check-input').forEach((input, index) => {
       markersLayer.addLayer(layers[index]);
       markersLayer.addLayer(cars[index]);
       cars[index].start();
+      if (timeoutfns[index].remaining > 0) {
+        timeoutfns[index].resume();;
+      }
       return;
     }
-
+    timeoutfns[index].pause();
     markersLayer.removeLayer(layers[index]);
     markersLayer.removeLayer(cars[index]);
   });
@@ -118,8 +122,8 @@ playPauseBtn.addEventListener('click', () => {
       start();
     }
     timeoutfns.forEach(timeout => {
-      if(timeout.remaining > 0) {
-        timeout.resume()
+      if (timeout.remaining > 0) {
+        timeout.resume();
       }
     });
     icon.classList.remove('bi-play-circle-fill');
