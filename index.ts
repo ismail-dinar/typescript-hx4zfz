@@ -100,9 +100,9 @@ document.querySelectorAll('.form-check-input').forEach((input, index) => {
     if ((event.target as HTMLInputElement).checked) {
       markersLayer.addLayer(layers[index]);
       markersLayer.addLayer(cars[index]);
-      cars[index].start();
+      cars[index].resume();
       if (timeoutfns[index].remaining > 0) {
-        timeoutfns[index].resume();;
+        timeoutfns[index].resume();
       }
       return;
     }
